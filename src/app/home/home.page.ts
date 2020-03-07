@@ -31,16 +31,37 @@ export class HomePage {
   ];
   public listaFiltrada = [];
 
-  public listaPokemonsApi: any;
+  public listaPokemonsApi = [];
+  public offsetGeral = 0;
+  public limitGeral = 10;
+  public paginaAtual = 0;
+  public totalPokemons = 0;
 
   constructor(public dadosService: DadosService, public router: Router, public pokeApi: PokedexApiService) {
-    this.buscaPokemonApi();
+    this.buscaPokemonApi(this.offsetGeral, this.limitGeral);
   }
+  //Busca os pokemons na Api quando abre a pagina.
 
-  public buscaPokemonApi(offset = 0){
-    this.pokeApi.listarPokemons(offset).subscribe(dados => {
-      this.listaPokemonsApi = dados['result'];
-      console.log(this.listaPokemonsApi);
+  public buscaPokemonApi(offset, limit){
+    this.pokeApi.listarPokemons(offset, limit).subscribe(dados => {
+
+      console.log(dados);
+
+      //Pega o total de pokemons
+      this.totalPokemons = dados['count'];
+
+      //Pega somente a lista com pokemons
+      let listaApi = dados['result'];
+
+      //Percorre a lista que veio da API
+      for(let item of listaApi){
+        //Busca todos os dados do pokemon usando URL
+        this.pokeApi.buscarPokemonUrl(item.url).subscribe(dadosPokemon => {
+          //Adicona os dados do pokemon no final da lista
+          this.listaPokemonsApi.push(dadosPokemon);
+        })
+      }
+      this.resetarLista();
     });
   }
 
@@ -59,7 +80,11 @@ export class HomePage {
   public buscarPokemon(evento: any){
     let busca = evento.target.value;
 
-    this.resetarLista();
+    this.resetarLista(){
+      //this.listaFiltrada = this.listaPokemon
+
+      this.listaFiltrada = this.listaPokemonsApi;
+    };
     
     if(busca && busca.trim() != ''){
       this.listaFiltrada = this.listaFiltrada.filter(dados => {
