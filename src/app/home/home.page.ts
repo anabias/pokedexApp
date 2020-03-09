@@ -51,7 +51,7 @@ export class HomePage {
       this.totalPokemons = dados['count'];
 
       //Pega somente a lista com pokemons
-      let listaApi = dados['result'];
+      let listaApi = dados['results'];
 
       //Percorre a lista que veio da API
       for(let item of listaApi){
@@ -59,14 +59,30 @@ export class HomePage {
         this.pokeApi.buscarPokemonUrl(item.url).subscribe(dadosPokemon => {
           //Adicona os dados do pokemon no final da lista
           this.listaPokemonsApi.push(dadosPokemon);
+          this.resetarLista();
         })
       }
-      this.resetarLista();
+      
     });
   }
 
+ 
   public resetarLista(){
-    this.listaFiltrada = this.listaPokemons;
+     //this.listaFiltrada = this.listaPokemon
+
+     //ordenar a lista de pokemons
+     this.listaPokemonsApi.sort(function (a, b) {
+      if (a.id > b.id) {
+        return 1;
+      }
+      if (a.id < b.id) {
+        return -1;
+      }
+      // a must be equal to b
+      return 0;
+    });
+
+     this.listaFiltrada = this.listaPokemonsApi;
   }
 
   public abrirDadosPokemon(pokemon: any){
@@ -80,11 +96,7 @@ export class HomePage {
   public buscarPokemon(evento: any){
     let busca = evento.target.value;
 
-    this.resetarLista(){
-      //this.listaFiltrada = this.listaPokemon
-
-      this.listaFiltrada = this.listaPokemonsApi;
-    };
+    this.resetarLista();
     
     if(busca && busca.trim() != ''){
       this.listaFiltrada = this.listaFiltrada.filter(dados => {
